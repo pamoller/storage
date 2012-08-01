@@ -15,6 +15,7 @@ With [Storage](http://pamoller.com/Storage.html) there is no need to implement d
     } catch(e) {
       alert('no storage available');
     }
+
 ##Introduction
 
 Currently there are three different types of permanent data storages in webbrowsers. localStorage is found on most webbrowsers, but it is not a database like IndexedDB or WebSQL. So localStorage is the most unadvanced choice. The most advanced choice is IndexedDB. But implementations are not found on all browsers. Safari and Opera don't support IndexedDB. They serve WebSQL. But the WebSQL standard is dropped from development for years. IndexedDB is it's replacement. It is an API for databases of records holding simple values and hierachical objects. Storage serves a unified API for storeing Javascript objects refrenced by keys similar to IndexedDB API, even if no IndexedDB implementation is found. In this cases WebSQL or LocalStorage are used as underlying data storage. The storages are accessed technically by StorageObjects. There are three types: Storage.IndexedDB, Storage.WebSQL and Storage.LocalStorage.
@@ -32,6 +33,7 @@ The first parameter is the name of the database, who is connected. The secound p
     } catch(e) {
       alert("no storage available");
     }
+
 To create a StorageObject of either IndexedDB, WebSQL or LocalStorage use:
 
 `Storage.IndexedDB Storage.connectIndexedDB ( String db, String store )`
@@ -49,6 +51,7 @@ The parameter list and their handling is the same as for the autoConnect-method.
     } catch(e) {
       alert("some storage is not available");
     }
+
 ##StorageRequest interface
 
 Most of StorageObject methods returns a StorageRequest object. The request object, can be used to define the success, error and complete callbacks.
@@ -71,6 +74,7 @@ The success callback recives the result of the request as first parameter. The e
     } catch(e) {
       alert("no storage available");
     }
+
 The request object servers has several instance variables:
 
 `int onsuccessCounter ::= 0`
@@ -124,6 +128,7 @@ If you want to initialize or upgrade the database, the version number must be *h
     } catch(e) {
       alert("no storage available");
     }
+
 *Note:* Changes of the database configuration need exclusive rights. So it can be done only secure, if all opened database connections are closed before. If there remains open database connections, the change operation waits until they will be finished also. So - best call init only as first database operation. Otherwise your applicatin may hang. It is not a problem of Storage, it is given by the design of the underlying storages.
 
     try {
@@ -134,6 +139,7 @@ If you want to initialize or upgrade the database, the version number must be *h
     } catch(e) {
       alert("no storage available");
     }
+
 To populate the storage with records or update existing use put:
 
 `StorageRequest put ( Object obj, key key, String store )`
@@ -166,6 +172,7 @@ The first parameter has to be a valid key, the second an existing store. The err
     } catch(e) {
       alert("no store available");
     }
+
 To read all objects of a data store or to a map-reduce over this set use list:
 
 `StorageRequest list ( String store )`
@@ -192,6 +199,7 @@ The onsuccess handler can be used to filter the objects by a map-reduce. Therefo
     } catch(e) {
       alert("no storage available");
     }
+
 To empty a data store use the clear:
 
 `StorageRequest clear ( String store )`
