@@ -4,6 +4,8 @@
 
 With [Storage](http://pamoller.com/Storage.html) there is no need to implement different types of data storages in webbrowsers. Storage is an Open Source Javascript Library who provides a unified and asynchronus API to store Javascript objects in one of the underlying data storages: [IndexedDB](http://www.w3.org/TR/IndexedDB/), [WebSQL](http://www.w3.org/TR/webdatabase/) or [localStorage](http://www.w3.org/TR/webstorage/). The objects are stored in data stores and referenced by a unique key simliar to the IndexedDB API.
 
+Storage is still beta. Tested Platforms: Firefox 13, Chrome 20, MSIE 9, Opera 12, Safari 5
+
     try { 
      var stg = Storage.autoConnect(); // constructor
      var crq = stg.init({db: 'storages', version:2, stores:['datas']}); // initialization

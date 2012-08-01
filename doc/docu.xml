@@ -8,16 +8,16 @@
     <para>Language: Javascript (5)</para>
     <para>Author: P. A. Möller, <olink targetdoc="http://pamoller.com">pamoller.com</olink></para>
     <para>License: MIT (Open Source)</para>
-    <para>First Published: 07/2012</para>
+    <para>First Published: 08/2012</para>
     <para>Tested Platforms: Firefox 13, Chrome 20, MSIE 9, Opera 12, Safari 5</para>
     <para>
        <olink targetdoc="http://pamoller.com/Storage.html">Home</olink>
        <olink targetdoc="http://pamoller.com/Storage.unit.html">Test</olink>
-       <olink targetdoc="https://code.google.com/p/Storage">Download</olink>
-       <olink targetdoc="https://code.google.com/p/Storage">Sources</olink></para>      
+       <olink targetdoc="https://github.com/pamoller/storage">Sources</olink></para>      
     </cover>
   </articleinfo>
   <para>With <olink targetdoc="http://pamoller.com/Storage.html">Storage</olink> there is no need to implement different types of data storages in webbrowsers. Storage is an Open Source Javascript Library who provides a unified and asynchronus API to store Javascript objects in one of the underlying data storages: <olink targetdoc="http://www.w3.org/TR/IndexedDB/">IndexedDB</olink>, <olink targetdoc="http://www.w3.org/TR/webdatabase/">WebSQL</olink> or <olink targetdoc="http://www.w3.org/TR/webstorage/">localStorage</olink>. The objects are stored in data stores and referenced by a unique key simliar to the IndexedDB API.</para>
+<para>Storage is still beta. Tested Platforms: Firefox 13, Chrome 20, MSIE 9, Opera 12, Safari 5</para>
 <programlisting language="javascript">try { 
  var stg = Storage.autoConnect(); // constructor
  var crq = stg.init({db: 'storages', version:2, stores:['datas']}); // initialization
