@@ -4,7 +4,7 @@
 
 With [Storage](http://pamoller.com/Storage.html) there is no need to implement different types of data storages in webbrowsers. Storage is an Open Source Javascript Library who provides a unified and asynchronus API to store Javascript objects in one of the underlying data storages: [IndexedDB](http://www.w3.org/TR/IndexedDB/), [WebSQL](http://www.w3.org/TR/webdatabase/) or [localStorage](http://www.w3.org/TR/webstorage/). The objects are stored in data stores and referenced by a unique key simliar to the IndexedDB API.
 
-Storage is still beta. Tested Platforms: Firefox 13, Chrome 20, MSIE 9, Opera 12, Safari 5
+Storage is still beta. Tested Platforms: Firefox 13+, Chrome 20+, MSIE 9, Opera 12, Safari 5
 
     try { 
      var stg = Storage.autoConnect(); // constructor
@@ -20,7 +20,9 @@ Storage is still beta. Tested Platforms: Firefox 13, Chrome 20, MSIE 9, Opera 12
 
 ##Introduction
 
-Currently there are three different types of permanent data storages in webbrowsers. localStorage is found on most webbrowsers, but it is not a database like IndexedDB or WebSQL. So localStorage is the most unadvanced choice. The most advanced choice is IndexedDB. But implementations are not found on all browsers. Safari and Opera don't support IndexedDB. They serve WebSQL. But the WebSQL standard is dropped from development for years. IndexedDB is it's replacement. It is an API for databases of records holding simple values and hierachical objects. Storage serves a unified API for storeing Javascript objects refrenced by keys similar to IndexedDB API, even if no IndexedDB implementation is found. In this cases WebSQL or LocalStorage are used as underlying data storage. The storages are accessed technically by StorageObjects. There are three types: Storage.IndexedDB, Storage.WebSQL and Storage.LocalStorage.
+Currently there are three different types of permanent data storages in webbrowsers. localStorage is found on most webbrowsers, but it is not a database like IndexedDB or WebSQL.
+So localStorage is the most unadvanced choice. The most advanced choice is IndexedDB. But implementations are not found on all browsers. Safari and Opera don't support IndexedDB. They serve WebSQL.
+But the WebSQL standard is dropped from development for years. IndexedDB is it's replacement. It is an API for databases of records holding simple values and hierachical objects. Storage serves a unified API for storeing Javascript objects refrenced by keys similar to IndexedDB API, even if no IndexedDB implementation is found. In this cases WebSQL or LocalStorage are used as underlying data storage. The storages are accessed technically by StorageObjects. There are three types: Storage.IndexedDB, Storage.WebSQL and Storage.LocalStorage. 
 
 ##Storage interface
 
@@ -28,7 +30,7 @@ The top level object Storage provides an interface for createing StorageObjects.
 
 `StorageObject Storage.autoConnect ( String db, String store )`
 
-The first parameter is the name of the database, who is connected. The secound parameter is a handy default for the store-parameter. If set, store parameter of many method calls can be obmitted. Both parameters are optional. Storage.autoConnect returns the first StorageObject that can be created successfully in order from: Storage.IndexedDB, Storage.WebSQL or Storage.LocalStorage. If no StorageObject can be created the  exception is thrown.
+The first parameter is the name of the database, who is connected. The second parameter is a handy default for the store-parameter. If set, store parameter of many method calls can be obmitted. Both parameters are optional. Storage.autoConnect returns the first StorageObject that can be created successfully in order from: Storage.IndexedDB, Storage.WebSQL or Storage.LocalStorage. If no StorageObject can be created the  exception is thrown.
 
     try {
       var stg = Storage.autoConnect();
@@ -47,7 +49,7 @@ To create a StorageObject of either IndexedDB, WebSQL or LocalStorage use:
 The parameter list and their handling is the same as for the autoConnect-method. The methods return a StorageObject of the requested type, or the  exception is thrown.
 
     try {
-      var localStg = Storage.connectLocalStorage(); // use default db: storage
+      var localStg = Storage.connectLocalStorage(); // use defaults
       var sqlStg = Storage.connectWebSQL('websql');
       var idxStg = Storage.connectIndexedDB('idx', 'defaultStore');
     } catch(e) {
@@ -70,7 +72,7 @@ The success callback recives the result of the request as first parameter. The e
       var obj =  {key:'X17', values:[2,6,3]};
       var stg = Storage.autoConnect();
       var req = stg.put(obj, obj.key, 'datas');
-      req.onsuccess = function(req) {}
+      req.onsuccess = function(res) {}
       req.onerror = function(code, msg) {}
       req.oncomplete = function() {}
     } catch(e) {
@@ -121,12 +123,12 @@ A data storage has to be initialized first by init:
 
 The configuration object includes all information to set up a database and the data stores. If version is not a valid number greater than 1 the error callback with error code 2 is fired. stores references an array of stores to be created, deleteStores an array of stores to be deleted.
 
-If you want to initialize or upgrade the database, the version number must be *higher* than the *actual version* number. *Use at least 2 as minimum version, cause 1 is the version of the vacuum database*. If version is not higher, init terminates successfully. When initializing or upgradeing the stores referenced by stores are created (if not existing) and the stores referenced by deleteStores are deleted. Deletion takes place before creation. So you can reinitialize stores with the init.
+If you want to initialize or upgrade the database, the version number must be *higher* than the *actual version* number. *Use at least 2 as minimum version, cause 1 is the version of the vacuum database*. If version is not higher, init terminates successfully. When initializing or upgradeing the stores referenced by stores are created (if not existing) and the stores referenced by deleteStores are deleted. Deletion takes place before creation. So you can reinitialize stores with init.
 
     try {
       var stg = Storage.autoConnect();
-      var req = stg.init({version:2, stores:['bluedor', 'reddor'], deleteStores:['reddor']});
-      req.onsuccess = function() { }; // import defaults to stores
+      var req = stg.init({version:2, stores:['bluedor'], deleteStores:['bluedor']});
+      req.onsuccess = function() { }; // import defaults
     } catch(e) {
       alert("no storage available");
     }
@@ -137,7 +139,7 @@ If you want to initialize or upgrade the database, the version number must be *h
       var stg = Storage.autoConnect();
       stg.init({version:1, stores:[bluedor]}); // nothing to do
       stg.init({version:2, stores:[bluedor]}); // initilization only
-      stg.init({version:3, stores:[bluedor]}); // blocks initilization, if actual version is 1
+      stg.init({version:3, stores:[bluedor]}); // blocks, if version is 1
     } catch(e) {
       alert("no storage available");
     }
@@ -146,11 +148,11 @@ To populate the storage with records or update existing use put:
 
 `StorageRequest put ( Object obj, key key, String store )`
 
-The first parameter is the object to be stored. The second is the key. If key is not valid the error callback with error code 6 is fired. The third parameter the name of the data stores. store is optional, as long the default instance variable store is not null. If store is not an existing, the error callback with error code 5 is fired. The onsuccess callback is called with obj as result. To read obejcts from the storage use get:
+The first parameter is the object to be stored. The second is the key. If key is not valid the error callback with error code 6 is fired. The third parameter is the name of the data store. store is optional, as long the default instance variable store is not null. If store is not the name of an existing data store, the error callback with error code 5 is fired. The onsuccess callback is called with obj as result. To read obejcts from the storage use get:
 
 `StorageRequest get ( key key, String store )`
 
-The first parameter has to be a valid key, the second an existing store. The error handlig is same as for put. The onsuccess callback is called with the requested object. If no object can be found by key, the error callback is called with eroorcode 4.
+The first parameter has to be a valid key, the second the name of an existing data store. The error handlig is same as for put. The onsuccess callback is called with the requested object. If no object can be found by key, the error callback is called with eroorcode 4.
 
     try {
       var stg = Storage.autoConnect();
@@ -161,13 +163,13 @@ The first parameter has to be a valid key, the second an existing store. The err
       req.onerror = function (code, msg) {
         switch(code) {
           case 4:
-            alert("there is no object referenced by this key");
+            alert("key not found in data store");
           break;
           case 5:
-            alert("data store does not exist");
+            alert("data store not present");
           break;
           case 6:
-            alert("key is not a valid key");
+            alert("key is invalid");
           break;
         }
       }
@@ -175,23 +177,23 @@ The first parameter has to be a valid key, the second an existing store. The err
       alert("no store available");
     }
 
-To read all objects of a data store or to a map-reduce over this set use list:
+To read all objects from a data store or to do a map-reduce over this set use list:
 
 `StorageRequest list ( String store )`
 
-list accepts only one parameter. If store is not a valid data store, even the instance variable of StorageObject set before, the error callback is fired with error code 5. The onsuccess callback is called for  record in the data store. If the data store is empty the error callback is fired with error code 3.
+list accepts only one parameter: If store is the name of an existing data store, even the instance variable of StorageObject set before, the error callback is fired with error code 5. The onsuccess callback is called for  record in the data store. If the data store is empty the error callback is fired with error code 3.
 
 The onsuccess handler can be used to filter the objects by a map-reduce. Therefore all selected objects are put to the request's stack. The completed stack is accessiable by the oncomplete handler, as shown in the following example of a pageing.
 
     try {
      var stg = Storage.autoConnect();
      for(var i = 0; i < 100; i++) {
-       var obj = {key: i, vaule: i}; // key is 0...99
-       stg.put(obj, obj.key, 'datas'); // populate the data store
+       var obj = {key: i, vaule: i};
+       stg.put(obj, obj.key, 'datas'); // populate
      }
      var req = stg.list('datas'); // map
      req.onsuccess = function(res) { // reduce
-       if  (10 <= res.key < 20) { // filter objects of second page
+       if  (10 <= res.key < 20) { // filter second page
          req.stack.push(res);
        }
      };
@@ -202,7 +204,7 @@ The onsuccess handler can be used to filter the objects by a map-reduce. Therefo
       alert("no storage available");
     }
 
-To empty a data store use the clear:
+To empty a data store use clear:
 
 `StorageRequest clear ( String store )`
 

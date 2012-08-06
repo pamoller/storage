@@ -9,7 +9,7 @@
     <para>Author: P. A. Möller, <olink targetdoc="http://pamoller.com">pamoller.com</olink></para>
     <para>License: MIT (Open Source)</para>
     <para>First Published: 08/2012</para>
-    <para>Tested Platforms: Firefox 13, Chrome 20, MSIE 9, Opera 12, Safari 5</para>
+    <para>Tested Platforms: Firefox 13+, Chrome 20+, MSIE 9, Opera 12, Safari 5</para>
     <para>
        <olink targetdoc="http://pamoller.com/Storage.html">Home</olink>
        <olink targetdoc="http://pamoller.com/Storage.unit.html">Test</olink>
@@ -17,7 +17,7 @@
     </cover>
   </articleinfo>
   <para>With <olink targetdoc="http://pamoller.com/Storage.html">Storage</olink> there is no need to implement different types of data storages in webbrowsers. Storage is an Open Source Javascript Library who provides a unified and asynchronus API to store Javascript objects in one of the underlying data storages: <olink targetdoc="http://www.w3.org/TR/IndexedDB/">IndexedDB</olink>, <olink targetdoc="http://www.w3.org/TR/webdatabase/">WebSQL</olink> or <olink targetdoc="http://www.w3.org/TR/webstorage/">localStorage</olink>. The objects are stored in data stores and referenced by a unique key simliar to the IndexedDB API.</para>
-<para>Storage is still beta. Tested Platforms: Firefox 13, Chrome 20, MSIE 9, Opera 12, Safari 5</para>
+<para>Storage is still beta. Tested Platforms: Firefox 13+, Chrome 20+, MSIE 9, Opera 12, Safari 5</para>
 <programlisting language="javascript">try { 
  var stg = Storage.autoConnect(); // constructor
  var crq = stg.init({db: 'storages', version:2, stores:['datas']}); // initialization
@@ -48,7 +48,7 @@ But the WebSQL standard is dropped from development for years. IndexedDB is it's
     <funcparams>store</funcparams>
   </methodparam>
   <exceptionname>NOSTORAGE</exceptionname>
-</methodsynopsis><para>The first parameter is the name of the database, who is connected. The secound parameter is a handy default for the store-parameter. If set, store parameter of many method calls can be obmitted. Both parameters are optional. Storage.autoConnect returns the first <type>StorageObject</type> that can be created successfully in order from: Storage.IndexedDB, Storage.WebSQL or Storage.LocalStorage. If no StorageObject can be created the <exceptionname>NOSTORAGE</exceptionname> exception is thrown.</para>
+</methodsynopsis><para>The first parameter is the name of the database, who is connected. The second parameter is a handy default for the store-parameter. If set, store parameter of many method calls can be obmitted. Both parameters are optional. Storage.autoConnect returns the first <type>StorageObject</type> that can be created successfully in order from: Storage.IndexedDB, Storage.WebSQL or Storage.LocalStorage. If no StorageObject can be created the <exceptionname>NOSTORAGE</exceptionname> exception is thrown.</para>
 <programlisting language="javascript">try {
   var stg = Storage.autoConnect();
 } catch(e) {
@@ -96,7 +96,7 @@ But the WebSQL standard is dropped from development for years. IndexedDB is it's
 </methodsynopsis>
 <para>The parameter list and their handling is the same as for the autoConnect-method. The methods return a StorageObject of the requested type, or the <exceptionname>NOTASTORAGE</exceptionname> exception is thrown.</para>
 <programlisting language="javascript">try {
-  var localStg = Storage.connectLocalStorage(); // use default db: storage
+  var localStg = Storage.connectLocalStorage(); // use defaults
   var sqlStg = Storage.connectWebSQL('websql');
   var idxStg = Storage.connectIndexedDB('idx', 'defaultStore');
 } catch(e) {
@@ -127,7 +127,7 @@ But the WebSQL standard is dropped from development for years. IndexedDB is it's
   var obj =  {key:'X17', values:[2,6,3]};
   var stg = Storage.autoConnect();
   var req = stg.put(obj, obj.key, 'datas');
-  req.onsuccess = function(req) {}
+  req.onsuccess = function(res) {}
   req.onerror = function(code, msg) {}
   req.oncomplete = function() {}
 } catch(e) {
@@ -195,11 +195,11 @@ But the WebSQL standard is dropped from development for years. IndexedDB is it's
   </methodparam>
 </methodsynopsis>
 <para>The configuration object includes all information to set up a database and the data stores. If version is not a valid number greater than 1 the error callback with error code 2 is fired. stores references an array of stores to be created, deleteStores an array of stores to be deleted.</para>
-<para>If you want to initialize or upgrade the database, the version number must be <emphasis>higher</emphasis> than the <emphasis>actual version</emphasis> number. <emphasis>Use at least 2 as minimum version, cause 1 is the version of the vacuum database</emphasis>. If version is not higher, init terminates successfully. When initializing or upgradeing the stores referenced by stores are created (if not existing) and the stores referenced by deleteStores are deleted. Deletion takes place before creation. So you can reinitialize stores with the init.</para>
+<para>If you want to initialize or upgrade the database, the version number must be <emphasis>higher</emphasis> than the <emphasis>actual version</emphasis> number. <emphasis>Use at least 2 as minimum version, cause 1 is the version of the vacuum database</emphasis>. If version is not higher, init terminates successfully. When initializing or upgradeing the stores referenced by stores are created (if not existing) and the stores referenced by deleteStores are deleted. Deletion takes place before creation. So you can reinitialize stores with init.</para>
  <programlisting language="javascript">try {
   var stg = Storage.autoConnect();
-  var req = stg.init({version:2, stores:['bluedor', 'reddor'], deleteStores:['reddor']});
-  req.onsuccess = function() { }; // import defaults to stores
+  var req = stg.init({version:2, stores:['bluedor'], deleteStores:['bluedor']});
+  req.onsuccess = function() { }; // import defaults
 } catch(e) {
   alert("no storage available");
 }</programlisting>
@@ -208,7 +208,7 @@ But the WebSQL standard is dropped from development for years. IndexedDB is it's
   var stg = Storage.autoConnect();
   stg.init({version:1, stores:[bluedor]}); // nothing to do
   stg.init({version:2, stores:[bluedor]}); // initilization only
-  stg.init({version:3, stores:[bluedor]}); // blocks initilization, if actual version is 1
+  stg.init({version:3, stores:[bluedor]}); // blocks, if version is 1
 } catch(e) {
   alert("no storage available");
 }</programlisting>
@@ -229,7 +229,7 @@ But the WebSQL standard is dropped from development for years. IndexedDB is it's
     <funcparams>store</funcparams>
   </methodparam>
 </methodsynopsis>
-<para>The first parameter is the object to be stored. The second is the key. If key is not valid the error callback with error code 6 is fired. The third parameter the name of the data stores. store is optional, as long the default instance variable store is not null. If store is not an existing, the error callback with error code 5 is fired. The onsuccess callback is called with obj as result. To read obejcts from the storage use get:</para>
+<para>The first parameter is the object to be stored. The second is the key. If key is not valid the error callback with error code 6 is fired. The third parameter is the name of the data store. store is optional, as long the default instance variable store is not null. If store is not the name of an existing data store, the error callback with error code 5 is fired. The onsuccess callback is called with obj as result. To read obejcts from the storage use get:</para>
 <methodsynopsis>
   <type>StorageRequest</type>
   <methodname>get</methodname>
@@ -242,7 +242,7 @@ But the WebSQL standard is dropped from development for years. IndexedDB is it's
     <funcparams>store</funcparams>
   </methodparam>
 </methodsynopsis>
-<para>The first parameter has to be a valid key, the second an existing store. The error handlig is same as for put. The onsuccess callback is called with the requested object. If no object can be found by key, the error callback is called with eroorcode 4.</para>
+<para>The first parameter has to be a valid key, the second the name of an existing data store. The error handlig is same as for put. The onsuccess callback is called with the requested object. If no object can be found by key, the error callback is called with eroorcode 4.</para>
 <programlisting language="javascript">try {
   var stg = Storage.autoConnect();
   var req = stg.get("unsure", "probably");
@@ -252,20 +252,20 @@ But the WebSQL standard is dropped from development for years. IndexedDB is it's
   req.onerror = function (code, msg) {
     switch(code) {
       case 4:
-        alert("there is no object referenced by this key");
+        alert("key not found in data store");
       break;
       case 5:
-        alert("data store does not exist");
+        alert("data store not present");
       break;
       case 6:
-        alert("key is not a valid key");
+        alert("key is invalid");
       break;
     }
   }
 } catch(e) {
   alert("no store available");
 }</programlisting>
-<para> To read all objects of a data store or to a map-reduce over this set use list:</para>
+<para>To read all objects from a data store or to do a map-reduce over this set use list:</para>
 <methodsynopsis>
   <type>StorageRequest</type>
   <methodname>list</methodname>
@@ -274,18 +274,18 @@ But the WebSQL standard is dropped from development for years. IndexedDB is it's
     <funcparams>store</funcparams>
   </methodparam>
 </methodsynopsis>
-  <para>list accepts only one parameter. If store is not a valid data store, even the instance variable of StorageObject set before, the error callback is fired with error code 5. The onsuccess callback is called for <empahsi>each</empahsi> record in the data store. If the data store is empty the error callback is fired with error code 3.</para>
+  <para>list accepts only one parameter: If store is the name of an existing data store, even the instance variable of StorageObject set before, the error callback is fired with error code 5. The onsuccess callback is called for <empahsi>each</empahsi> record in the data store. If the data store is empty the error callback is fired with error code 3.</para>
   <para>The onsuccess handler can be used to filter the objects by a map-reduce. Therefore all selected objects are put to the request's stack. The completed stack is accessiable by the oncomplete handler, as shown in the following example of a pageing.</para>
 <informalfigure  id="mapreduce" >
  <programlisting language="javascript">try {
  var stg = Storage.autoConnect();
  for(var i = 0; i &lt; 100; i++) {
-   var obj = {key: i, vaule: i}; // key is 0...99
-   stg.put(obj, obj.key, 'datas'); // populate the data store
+   var obj = {key: i, vaule: i};
+   stg.put(obj, obj.key, 'datas'); // populate
  }
  var req = stg.list('datas'); // map
  req.onsuccess = function(res) { // reduce
-   if  (10 &lt;= res.key &lt; 20) { // filter objects of second page
+   if  (10 &lt;= res.key &lt; 20) { // filter second page
      req.stack.push(res);
    }
  };
@@ -295,7 +295,7 @@ But the WebSQL standard is dropped from development for years. IndexedDB is it's
 } catch(e) {
   alert("no storage available");
 }</programlisting></informalfigure>
-<para>To empty a data store use the clear:</para>
+<para>To empty a data store use clear:</para>
  <methodsynopsis>
   <type>StorageRequest</type>
   <methodname>clear</methodname>
