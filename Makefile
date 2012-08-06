@@ -12,7 +12,7 @@ $(index) : doc/docu.html
 	cp $^ $@
 
 $(storage):	src/*js
-	(cd bin && sh build.sh > ../release/js/storage.js)
+	(cd tools && sh build.sh > ../release/js/storage.js)
 
 $(unit): src/test/unit.js
 	cp $^ $@
