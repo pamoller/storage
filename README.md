@@ -230,15 +230,15 @@ the directory storage and run make. It creates a folder named release. To use St
 
 ##Error Codes
 
-*2* version is not a number
+2 *version is not a number*
 
-*3* no datas in data store
+3 *no datas in data store*
 
-*4* key not found in data store
+4 *key not found in data store*
 
-*5* data store not present
+5 *data store not present*
 
-*6* key is invalid
+6 *key is invalid*
 
-*8* internal storage error
+8 *internal storage error*
 
