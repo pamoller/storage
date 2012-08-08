@@ -1,0 +1,341 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<article version="5.0" xml:lang="en">
+  <articleinfo>
+     <title>Storage</title>
+     <subtitle>use storages in webbrowsers easily</subtitle>
+    <cover role="spec">
+    <para>Name: Storage</para>
+    <para>Language: Javascript (5)</para>
+    <para>Author: P. A. Möller, <olink targetdoc="http://pamoller.com">pamoller.com</olink></para>
+    <para>License: MIT (Open Source)</para>
+    <para>First Published: 08/2012</para>
+    <para>Tested Platforms: Firefox 13+, Chrome 20+, MSIE 9, Opera 12, Safari 5</para>
+    <para>
+       <olink targetdoc="http://pamoller.com/Storage.html">Home</olink>
+       <olink targetdoc="http://pamoller.com/Storage.unit.html">Test</olink>
+       <olink targetdoc="https://github.com/pamoller/storage">Sources</olink></para>      
+    </cover>
+  </articleinfo>
+  <para>With <olink targetdoc="http://pamoller.com/Storage.html">Storage</olink> there is no need to implement different types of data storages in webbrowsers. Storage is an Open Source Javascript Library who provides a unified and asynchronus API to store Javascript objects in one of the underlying data storages: <olink targetdoc="http://www.w3.org/TR/IndexedDB/">IndexedDB</olink>, <olink targetdoc="http://www.w3.org/TR/webdatabase/">WebSQL</olink> or <olink targetdoc="http://www.w3.org/TR/webstorage/">localStorage</olink>. The objects are stored in data stores and referenced by a unique key simliar to the IndexedDB API.</para>
+<para>Storage is still beta. Tested Platforms: Firefox 13+, Chrome 20+, MSIE 9, Opera 12, Safari 5. To build and invoke Storage see section <olink targetptr="build">Build Storage</olink>.</para>
+<programlisting language="javascript">try { 
+ var stg = Storage.autoConnect(); // constructor
+ var crq = stg.init({db: 'storages', version:2, stores:['datas']}); // initialization
+ crq.onsuccess = function() {
+   var req = stg.put({key: 'XQ121', datas:[5,7,8,9]}, 'XQ121', 'datas'); // asynchronous operation
+   req.onsuccess = function(obj) {console.log('inserted successfully');}
+   req.onerror = function(code, msg) {throw new Error(code);}
+ }
+} catch(e) {
+  alert('no storage available');
+}</programlisting>
+<section><title>Introduction</title>
+<para>Currently there are three different types of permanent data storages in webbrowsers. localStorage is found on most webbrowsers, but it is not a database like IndexedDB or WebSQL.
+So localStorage is the most unadvanced choice. The most advanced choice is IndexedDB. But implementations are not found on all browsers. Safari and Opera don't support IndexedDB. They serve WebSQL.
+But the WebSQL standard is dropped from development for years. IndexedDB is it's replacement. It is an API for databases of records holding simple values and hierachical objects. Storage serves a unified API for storeing Javascript objects refrenced by keys similar to IndexedDB API, even if no IndexedDB implementation is found. In this cases WebSQL or LocalStorage are used as underlying data storage. The storages are accessed technically by StorageObjects. There are three types: Storage.IndexedDB, Storage.WebSQL and Storage.LocalStorage. </para>
+</section>
+<section id="storage-interface"><title>Storage interface</title>
+<para>The top level object Storage provides an interface for createing StorageObjects. To choose the best accessible storage of the browser use Storage.autoConnect:</para>
+<methodsynopsis>
+  <type>StorageObject</type>
+  <methodname>Storage.autoConnect</methodname>
+  <methodparam>
+    <type>String</type>
+    <funcparams>db</funcparams>
+  </methodparam>
+  <methodparam>
+    <type>String</type>
+    <funcparams>store</funcparams>
+  </methodparam>
+  <exceptionname>NOSTORAGE</exceptionname>
+</methodsynopsis><para>The first parameter is the name of the database, who is connected. The second parameter is a handy default for the store-parameter. If set, store parameter of many method calls can be obmitted. Both parameters are optional. Storage.autoConnect returns the first <type>StorageObject</type> that can be created successfully in order from: Storage.IndexedDB, Storage.WebSQL or Storage.LocalStorage. If no StorageObject can be created the <exceptionname>NOSTORAGE</exceptionname> exception is thrown.</para>
+<programlisting language="javascript">try {
+  var stg = Storage.autoConnect();
+} catch(e) {
+  alert("no storage available");
+}</programlisting>
+<para>To create a StorageObject of either IndexedDB, WebSQL or LocalStorage use:</para>
+<methodsynopsis>
+  <type>Storage.IndexedDB</type>
+  <methodname>Storage.connectIndexedDB</methodname>
+  <methodparam>
+    <type>String</type>
+    <funcparams>db</funcparams>
+  </methodparam>
+  <methodparam>
+    <type>String</type>
+    <funcparams>store</funcparams>
+  </methodparam>
+  <exceptionname>NOTASTORAGE</exceptionname>
+</methodsynopsis>
+<methodsynopsis>
+  <type>Storage.WebSQL</type>
+  <methodname>Storage.connectWebSQL</methodname>
+  <methodparam>
+    <type>String</type>
+    <funcparams>db</funcparams>
+  </methodparam>
+  <methodparam>
+    <type>String</type>
+    <funcparams>store</funcparams>
+  </methodparam>
+  <exceptionname>NOTASTORAGE</exceptionname>
+</methodsynopsis>
+<methodsynopsis>
+  <type>Storage.LocalStorage</type>
+  <methodname>Storage.connectLocalStorage</methodname>
+  <methodparam>
+    <type>String</type>
+    <funcparams>db</funcparams>
+  </methodparam>
+  <methodparam>
+    <type>String</type>
+    <funcparams>store</funcparams>
+  </methodparam>
+  <exceptionname>NOTASTORAGE</exceptionname>
+</methodsynopsis>
+<para>The parameter list and their handling is the same as for the autoConnect-method. The methods return a StorageObject of the requested type, or the <exceptionname>NOTASTORAGE</exceptionname> exception is thrown.</para>
+<programlisting language="javascript">try {
+  var localStg = Storage.connectLocalStorage(); // use defaults
+  var sqlStg = Storage.connectWebSQL('websql');
+  var idxStg = Storage.connectIndexedDB('idx', 'defaultStore');
+} catch(e) {
+  alert("some storage is not available");
+}</programlisting>
+
+</section>
+
+<section><title>Storage.Request interface</title>
+<para>Most methods of StorageObject return a object of type Storage.Request. This object, can be used to define the success, error and complete callbacks of the request.</para>
+<fieldsynopsis>
+<type>function</type>
+<varname>onsuccess</varname>
+<initializer>null</initializer>
+</fieldsynopsis>
+<fieldsynopsis>
+<type>function</type>
+<varname>onerror</varname>
+<initializer>null</initializer>
+</fieldsynopsis>
+<fieldsynopsis>
+<type>function</type>
+<varname>oncomplete</varname>
+<initializer>null</initializer>
+</fieldsynopsis>
+<para>The success callback recives the result of the request as first parameter. The error callback recives the error code and a textual error message as input parameters. The complete callback recives no input parameters and is called last.</para>
+<programlisting language="javascript">try {
+  var obj =  {key:'X17', values:[2,6,3]};
+  var stg = Storage.autoConnect();
+  var req = stg.put(obj, obj.key, 'datas');
+  req.onsuccess = function(res) {}
+  req.onerror = function(code, msg) {}
+  req.oncomplete = function() {}
+} catch(e) {
+  alert("no storage available");
+}</programlisting>
+  <para>The request object servers has several instance variables:</para>
+<fieldsynopsis>
+<type>int</type>
+<varname>onsuccessCounter</varname>
+<initializer>0</initializer>
+</fieldsynopsis>
+ <para><varname>onsuccessCounter</varname> counts the number of invocations of the success callback.</para>
+ <fieldsynopsis>
+<type>Number</type>
+<varname>errorCode</varname>
+<initializer>undefined</initializer>
+</fieldsynopsis>
+<para><varname>errorCode</varname> is the error code of the last error.</para>
+<fieldsynopsis>
+<type>String</type>
+<varname>errorMessage</varname>
+<initializer>undefined</initializer>
+</fieldsynopsis>
+<para><varname>errorMessage</varname> is a human readable error message of the last error.</para>
+<fieldsynopsis>
+<type>Array</type>
+<varname>stack</varname>
+<initializer>[]</initializer>
+</fieldsynopsis>
+ <para><varname>stack</varname> is a helper array to store <olink targetptr="mapreduce">filtered results</olink> from onscussess handler. It allows to implement map-reduce.</para>
+ <fieldsynopsis>
+<type>Boolean</type>
+<varname>stackClosed</varname>
+<initializer>false</initializer>
+</fieldsynopsis>
+<para><varname>stackClosed</varname> is also helper variable for marking stack as closed.</para>
+ <fieldsynopsis>
+<type>Array</type>
+<varname>timerids</varname>
+<initializer>[]</initializer>
+</fieldsynopsis>
+<para><varname>timerids</varname> is the array of all timerids started by the request. The first timerid is the timerid of the request itself.</para>
+</section>
+<section><title>StorageObject interface</title>
+<para>All types of StorageObjects (Storage.IndexedDB, Storage.WebSQL or Storage.LocalStorage) serve the same interface. The StorageObject has at least two instance variables:</para>
+<fieldsynopsis>
+<type>String</type>
+<varname>db</varname>
+<initializer>storage</initializer>
+</fieldsynopsis>
+<para>The name of the connected database. It can be set by the <olink targetptr="storage-interface">Storage interface</olink> and be overwritten by the configuration object of the init method, see below. By default the database storage is connected.</para>
+<fieldsynopsis>
+<type>String</type>
+<varname>store</varname>
+<initializer>null</initializer>
+</fieldsynopsis>
+<para><varname>store</varname> is a handy default for the store-parameter. If, set it can be obmitted in the call of the following methods.</para>
+<para>A data storage has to be initialized first by <methodname>init</methodname>:</para>
+<methodsynopsis>
+  <type>Storage.Request</type>
+  <methodname>init</methodname>
+  <methodparam>
+    <type>Object</type>
+    <funcparams>{db:String, version:Number, stores:Array, deleteStores:Array}</funcparams>
+  </methodparam>
+</methodsynopsis>
+<para>The configuration object includes all information to set up a database and the data stores. If version is not a valid number greater than 1 the error callback with error code 2 is fired. stores references an array of stores to be created, deleteStores an array of stores to be deleted.</para>
+<para>If you want to initialize or upgrade the database, the version number must be <emphasis>higher</emphasis> than the <emphasis>actual version</emphasis> number. <emphasis>Use at least 2 as minimum version, cause 1 is the version of the vacuum database</emphasis>. If version is not higher, init terminates successfully. When initializing or upgradeing the stores referenced by stores are created (if not existing) and the stores referenced by deleteStores are deleted. Deletion takes place before creation. So you can reinitialize stores with init.</para>
+ <programlisting language="javascript">try {
+  var stg = Storage.autoConnect();
+  var req = stg.init({version:2, stores:['bluedor'], deleteStores:['bluedor']});
+  req.onsuccess = function() { }; // import defaults
+} catch(e) {
+  alert("no storage available");
+}</programlisting>
+<para><emphasis>Note:</emphasis> Changes of the database configuration need exclusive rights. So it can be done only secure, if all opened database connections are closed before. If there remains open database connections, the change operation waits until they will be finished also. So - best call init only as first database operation. Otherwise your applicatin may hang. It is not a problem of Storage, it is given by the design of the underlying storages.</para>
+<programlisting language="javascript">try {
+  var stg = Storage.autoConnect();
+  stg.init({version:1, stores:[bluedor]}); // nothing to do
+  stg.init({version:2, stores:[bluedor]}); // initilization only
+  stg.init({version:3, stores:[bluedor]}); // blocks, if version is 1
+} catch(e) {
+  alert("no storage available");
+}</programlisting>
+<para>To populate the storage with records or update existing use <methodname>put</methodname>:</para>
+<methodsynopsis>
+  <type>Storage.Request</type>
+  <methodname>put</methodname>
+  <methodparam>
+    <type>Object</type>
+    <funcparams>obj</funcparams>
+  </methodparam>
+  <methodparam>
+    <type>key</type>
+    <funcparams>key</funcparams>
+  </methodparam>
+  <methodparam>
+    <type>String</type>
+    <funcparams>store</funcparams>
+  </methodparam>
+</methodsynopsis>
+<para>The first parameter is the object to be stored. The second is the key. If key is not valid the error callback with error code 6 is fired. The third parameter is the name of the data store. store is optional, as long the default instance variable store is not null. If store is not the name of an existing data store, the error callback with error code 5 is fired. The onsuccess callback is called with obj as result. To read obejcts from the storage use get:</para>
+<methodsynopsis>
+  <type>Storage.Request</type>
+  <methodname>get</methodname>
+  <methodparam>
+    <type>key</type>
+    <funcparams>key</funcparams>
+  </methodparam>
+  <methodparam>
+    <type>String</type>
+    <funcparams>store</funcparams>
+  </methodparam>
+</methodsynopsis>
+<para>The first parameter has to be a valid key, the second the name of an existing data store. The error handlig is same as for put. The onsuccess callback is called with the requested object. If no object can be found by key, the error callback is called with eroorcode 4.</para>
+<programlisting language="javascript">try {
+  var stg = Storage.autoConnect();
+  var req = stg.get("unsure", "probably");
+  req.onsuccess = function(res) {
+    show_result(res);
+  };
+  req.onerror = function (code, msg) {
+    switch(code) {
+      case 4:
+        alert("key not found in data store");
+      break;
+      case 5:
+        alert("data store not present");
+      break;
+      case 6:
+        alert("key is invalid");
+      break;
+    }
+  }
+} catch(e) {
+  alert("no store available");
+}</programlisting>
+<para>To read all objects from a data store or to do a map-reduce over this set use list:</para>
+<methodsynopsis>
+  <type>Storage.Request</type>
+  <methodname>list</methodname>
+  <methodparam>
+    <type>String</type>
+    <funcparams>store</funcparams>
+  </methodparam>
+</methodsynopsis>
+  <para>list accepts only one parameter: If store is the name of an existing data store, even the instance variable of StorageObject set before, the error callback is fired with error code 5. The onsuccess callback is called for <empahsi>each</empahsi> record in the data store. If the data store is empty the error callback is fired with error code 3.</para>
+  <para>The onsuccess handler can be used to filter the objects by a map-reduce. Therefore all selected objects are put to the request's stack. The completed stack is accessiable by the oncomplete handler, as shown in the following example of a pageing.</para>
+<informalfigure  id="mapreduce" >
+ <programlisting language="javascript">try {
+ var stg = Storage.autoConnect();
+ for(var i = 0; i &lt; 100; i++) {
+   var obj = {key: i, vaule: i};
+   stg.put(obj, obj.key, 'datas'); // populate
+ }
+ var req = stg.list('datas'); // map
+ req.onsuccess = function(res) { // reduce
+   if  (10 &lt;= res.key &lt; 20) { // filter second page
+     req.stack.push(res);
+   }
+ };
+ req.oncomplete = function(res) {
+  show_results(req.stack); // show second page
+  };
+} catch(e) {
+  alert("no storage available");
+}</programlisting></informalfigure>
+<para>To delete a object from a data store use delete:</para>
+<methodsynopsis>
+  <type>Storage.Request</type>
+  <methodname>delete</methodname>
+  <methodparam>
+    <type>String</type>
+    <funcparams>key</funcparams></methodparam>
+    <methodparam>
+  <type>String</type>
+  <funcparams>store</funcparams>    
+    </methodparam>  
+  </methodsynopsis>
+  <para>Delete takes a valid key as first function parameter and removes the key and the associated object from the data store. If the key does not exists in the data store the error callback with error code 4 will be fired.</para>
+<para>To empty a data store use clear:</para>
+ <methodsynopsis>
+  <type>Storage.Request</type>
+  <methodname>clear</methodname>
+  <methodparam>
+    <type>String</type>
+    <funcparams>store</funcparams>
+  </methodparam>
+</methodsynopsis>
+<para>The parameter list and their handling is the same as for list. The onsuccess callback is called with an empty result.</para>
+</section>
+<section id="build"><title>Build Storage</title>
+<para>To build Storage from sources, checkout first <code>https://github.com/pamoller/storage.git</code>. Change to
+the directory storage and run make. It creates a folder named release. To use Storage along HTML do like:</para>
+<programlisting language="html"><![CDATA[<html>
+ <head>
+  <script src="js/storage.js"></script>
+ </head>
+ <body></body>
+</html>]]></programlisting></section>
+<section id="errors"><title>Error Codes</title>
+<variablelist>
+<varlistentry><term>2</term><listitem>version is not a number</listitem></varlistentry>
+<varlistentry><term>3</term><listitem>no datas in data store</listitem></varlistentry>
+<varlistentry><term>4</term><listitem>key not found in data store</listitem></varlistentry>
+<varlistentry><term>5</term><listitem>data store not present</listitem></varlistentry>
+<varlistentry><term>6</term><listitem>key is invalid</listitem></varlistentry>
+<varlistentry><term>8</term><listitem>internal storage error</listitem></varlistentry>
+</variablelist>
+</section>
+</article>
